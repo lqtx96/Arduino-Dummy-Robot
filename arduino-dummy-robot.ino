@@ -104,7 +104,7 @@ void loop() {
     Serial.print("LX:"); Serial.print(leftJoystickX); Serial.print(", ");
     Serial.print("LY:"); Serial.print(leftJoystickY); Serial.print(", ");
     Serial.print("RX:"); Serial.print(rightJoystickX); Serial.print(", ");
-    Serial.print("RY:"); Serial.print(rightJoystickY);
+    Serial.print("RY:"); Serial.print(rightJoystickY); Serial.print(" --- ");
 
     if (((leftJoystickX > 112) && (leftJoystickX < 144) && (leftJoystickY > 112) && (leftJoystickY < 144)) && ((rightJoystickX > 112) && (rightJoystickX < 144))) {
       Serial.print(", ");
@@ -113,11 +113,13 @@ void loop() {
     }
 
     else if ((rightJoystickX < 112)) {
+      Serial.print((127 - rightJoystickX)*2); Serial.print(" --- ");
       rotateLeft((127 - rightJoystickX)*2);
     }
 
     else if (rightJoystickX > 144) {
-      rotateRight((rightJoystickX - 127)*2);
+      Serial.print((rightJoystickX - 127)*2); Serial.print(" --- ");
+      rotateRight((rightJoystickX - 128)*2);
     }
 
     else {
