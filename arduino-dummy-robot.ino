@@ -106,30 +106,65 @@ void loop() {
     Serial.print("RX:"); Serial.print(rightJoystickX); Serial.print(", ");
     Serial.print("RY:"); Serial.print(rightJoystickY);
 
-    if (leftJoystickX > 112 && leftJoystickX < 144 && leftJoystickY > 112 && leftJoystickY < 144 ) {
+    if (((leftJoystickX > 112) && (leftJoystickX < 144) && (leftJoystickY > 112) && (leftJoystickY < 144)) && ((rightJoystickX > 112) && (rightJoystickX < 144))) {
       Serial.print(", ");
-      Serial.println("Center/No movement");
+      Serial.print("Center/No movement --- ");
+      stand();
     }
+
+    else if ((rightJoystickX < 112)) {
+      rotateLeft((127 - rightJoystickX)*2);
+    }
+
+    else if (rightJoystickX > 144) {
+      rotateRight((rightJoystickX - 127)*2);
+    }
+
     else {
       leftJoystickAngle = atan2(-(leftJoystickY - 128), (leftJoystickX - 128)) * 180 / PI;
       leftJoystickMagnitude = constrain(sqrt((leftJoystickX - 128) * (leftJoystickX - 128) + (leftJoystickY - 128) * (leftJoystickY - 128)), 0, 128) * 2 - 1;
 
       Serial.print(", Left angle: "); Serial.print(leftJoystickAngle);
-      Serial.print(", Left magnitude: "); Serial.println(leftJoystickMagnitude);
+      Serial.print(", Left magnitude: "); Serial.print(leftJoystickMagnitude); Serial.print(" --- ");
+
+      if ((leftJoystickAngle >= 68) && (leftJoystickAngle < 112)) {
+        moveForward(leftJoystickMagnitude);
+      }
+      else if ((leftJoystickAngle >= 112) && (leftJoystickAngle < 158)) {
+        moveLeftForward(leftJoystickMagnitude);
+      }
+      else if (((leftJoystickAngle >= 158) && (leftJoystickAngle <= 180)) || ((leftJoystickAngle >= -179) && (leftJoystickAngle < -158))) {
+        moveLeft(leftJoystickMagnitude);
+      }
+      else if ((leftJoystickAngle >= -158) && (leftJoystickAngle < -112)) {
+        moveLeftBackward(leftJoystickMagnitude);
+      }
+      else if ((leftJoystickAngle >= -112) && (leftJoystickAngle < -68)) {
+        moveBackward(leftJoystickMagnitude);
+      }
+      else if ((leftJoystickAngle >= -68) && (leftJoystickAngle < -22)) {
+        moveRightBackward(leftJoystickMagnitude);
+      }
+      else if (((leftJoystickAngle >= -22) && (leftJoystickAngle <= 0)) || ((leftJoystickAngle >= 1) && (leftJoystickAngle < 22))) {
+        moveRight(leftJoystickMagnitude);
+      }
+      else if ((leftJoystickAngle >= 22) && (leftJoystickAngle < 68)) {
+        moveRightForward(leftJoystickMagnitude);
+      }
     }
   }
   delay(50);
 }
 
 void moveForward(uint8_t speed) {
-  digitalWrite(FRONT_LEFT_MOTOR_DIR, 0);
-  analogWrite(FRONT_LEFT_MOTOR_PWM, 0);
-  digitalWrite(FRONT_RIGHT_MOTOR_DIR, 0);
-  analogWrite(FRONT_RIGHT_MOTOR_PWM, 0);
-  digitalWrite(REAR_LEFT_MOTOR_DIR, 0);
-  analogWrite(REAR_LEFT_MOTOR_PWM, 0);
-  digitalWrite(REAR_RIGHT_MOTOR_DIR, 0);
-  analogWrite(REAR_RIGHT_MOTOR_PWM, 0); 
+  digitalWrite(FRONT_LEFT_MOTOR_DIR, LOW);
+  analogWrite(FRONT_LEFT_MOTOR_PWM, speed);
+  digitalWrite(FRONT_RIGHT_MOTOR_DIR, LOW);
+  analogWrite(FRONT_RIGHT_MOTOR_PWM, speed);
+  digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);
+  analogWrite(REAR_LEFT_MOTOR_PWM, speed);
+  digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
+  analogWrite(REAR_RIGHT_MOTOR_PWM, speed); 
 
   #ifdef DEBUG
   Serial.println("Move Forward");
@@ -137,14 +172,14 @@ void moveForward(uint8_t speed) {
 }
 
 void moveBackward(uint8_t speed) {
-  digitalWrite(FRONT_LEFT_MOTOR_DIR, 1);
-  analogWrite(FRONT_LEFT_MOTOR_PWM, 0);
-  digitalWrite(FRONT_RIGHT_MOTOR_DIR, 1);
-  analogWrite(FRONT_RIGHT_MOTOR_PWM, 0);
-  digitalWrite(REAR_LEFT_MOTOR_DIR, 1);
-  analogWrite(REAR_LEFT_MOTOR_PWM, 0);
-  digitalWrite(REAR_RIGHT_MOTOR_DIR, 1);
-  analogWrite(REAR_RIGHT_MOTOR_PWM, 0); 
+  digitalWrite(FRONT_LEFT_MOTOR_DIR, HIGH);
+  analogWrite(FRONT_LEFT_MOTOR_PWM, speed);
+  digitalWrite(FRONT_RIGHT_MOTOR_DIR, HIGH);
+  analogWrite(FRONT_RIGHT_MOTOR_PWM, speed);
+  digitalWrite(REAR_LEFT_MOTOR_DIR, HIGH);
+  analogWrite(REAR_LEFT_MOTOR_PWM, speed);
+  digitalWrite(REAR_RIGHT_MOTOR_DIR, HIGH);
+  analogWrite(REAR_RIGHT_MOTOR_PWM, speed); 
 
   #ifdef DEBUG
   Serial.println("Move Backward");
@@ -152,14 +187,14 @@ void moveBackward(uint8_t speed) {
 }
 
 void moveLeft(uint8_t speed) {
-  digitalWrite(FRONT_LEFT_MOTOR_DIR, 1);
-  analogWrite(FRONT_LEFT_MOTOR_PWM, 0);
-  digitalWrite(FRONT_RIGHT_MOTOR_DIR, 0);
-  analogWrite(FRONT_RIGHT_MOTOR_PWM, 0);
-  digitalWrite(REAR_LEFT_MOTOR_DIR, 0);
-  analogWrite(REAR_LEFT_MOTOR_PWM, 0);
-  digitalWrite(REAR_RIGHT_MOTOR_DIR, 1);
-  analogWrite(REAR_RIGHT_MOTOR_PWM, 0); 
+  digitalWrite(FRONT_LEFT_MOTOR_DIR, HIGH);
+  analogWrite(FRONT_LEFT_MOTOR_PWM, speed);
+  digitalWrite(FRONT_RIGHT_MOTOR_DIR, LOW);
+  analogWrite(FRONT_RIGHT_MOTOR_PWM, speed);
+  digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);
+  analogWrite(REAR_LEFT_MOTOR_PWM, speed);
+  digitalWrite(REAR_RIGHT_MOTOR_DIR, HIGH);
+  analogWrite(REAR_RIGHT_MOTOR_PWM, speed); 
 
   #ifdef DEBUG
   Serial.println("Move Left");
@@ -167,14 +202,14 @@ void moveLeft(uint8_t speed) {
 }
 
 void moveRight(uint8_t speed) {
-  digitalWrite(FRONT_LEFT_MOTOR_DIR, 0);
-  analogWrite(FRONT_LEFT_MOTOR_PWM, 0);
-  digitalWrite(FRONT_RIGHT_MOTOR_DIR, 1);
-  analogWrite(FRONT_RIGHT_MOTOR_PWM, 0);
-  digitalWrite(REAR_LEFT_MOTOR_DIR, 1);
-  analogWrite(REAR_LEFT_MOTOR_PWM, 0);
-  digitalWrite(REAR_RIGHT_MOTOR_DIR, 0);
-  analogWrite(REAR_RIGHT_MOTOR_PWM, 0); 
+  digitalWrite(FRONT_LEFT_MOTOR_DIR, LOW);
+  analogWrite(FRONT_LEFT_MOTOR_PWM, speed);
+  digitalWrite(FRONT_RIGHT_MOTOR_DIR, HIGH);
+  analogWrite(FRONT_RIGHT_MOTOR_PWM, speed);
+  digitalWrite(REAR_LEFT_MOTOR_DIR, HIGH);
+  analogWrite(REAR_LEFT_MOTOR_PWM, speed);
+  digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
+  analogWrite(REAR_RIGHT_MOTOR_PWM, speed); 
 
   #ifdef DEBUG
   Serial.println("Move Right");
@@ -182,13 +217,13 @@ void moveRight(uint8_t speed) {
 }
 
 void moveLeftForward(uint8_t speed) {
-  digitalWrite(FRONT_LEFT_MOTOR_DIR, 0);
+  digitalWrite(FRONT_LEFT_MOTOR_DIR, LOW);
   analogWrite(FRONT_LEFT_MOTOR_PWM, 0);
-  digitalWrite(FRONT_RIGHT_MOTOR_DIR, 0);
-  analogWrite(FRONT_RIGHT_MOTOR_PWM, 0);
-  digitalWrite(REAR_LEFT_MOTOR_DIR, 0);
-  analogWrite(REAR_LEFT_MOTOR_PWM, 0);
-  digitalWrite(REAR_RIGHT_MOTOR_DIR, 0);
+  digitalWrite(FRONT_RIGHT_MOTOR_DIR, LOW);
+  analogWrite(FRONT_RIGHT_MOTOR_PWM, speed);
+  digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);
+  analogWrite(REAR_LEFT_MOTOR_PWM, speed);
+  digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
   analogWrite(REAR_RIGHT_MOTOR_PWM, 0); 
 
   #ifdef DEBUG
@@ -197,14 +232,14 @@ void moveLeftForward(uint8_t speed) {
 }
 
 void moveRightForward(uint8_t speed) {
-  digitalWrite(FRONT_LEFT_MOTOR_DIR, 0);
-  analogWrite(FRONT_LEFT_MOTOR_PWM, 0);
-  digitalWrite(FRONT_RIGHT_MOTOR_DIR, 0);
+  digitalWrite(FRONT_LEFT_MOTOR_DIR, LOW);
+  analogWrite(FRONT_LEFT_MOTOR_PWM, speed);
+  digitalWrite(FRONT_RIGHT_MOTOR_DIR, LOW);
   analogWrite(FRONT_RIGHT_MOTOR_PWM, 0);
-  digitalWrite(REAR_LEFT_MOTOR_DIR, 0);
+  digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);
   analogWrite(REAR_LEFT_MOTOR_PWM, 0);
-  digitalWrite(REAR_RIGHT_MOTOR_DIR, 0);
-  analogWrite(REAR_RIGHT_MOTOR_PWM, 0); 
+  digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
+  analogWrite(REAR_RIGHT_MOTOR_PWM, speed); 
 
   #ifdef DEBUG
   Serial.println("Move Right Forward");
@@ -212,14 +247,14 @@ void moveRightForward(uint8_t speed) {
 }
 
 void moveLeftBackward(uint8_t speed) {
-  digitalWrite(FRONT_LEFT_MOTOR_DIR, 1);
-  analogWrite(FRONT_LEFT_MOTOR_PWM, 0);
-  digitalWrite(FRONT_RIGHT_MOTOR_DIR, 0);
+  digitalWrite(FRONT_LEFT_MOTOR_DIR, HIGH);
+  analogWrite(FRONT_LEFT_MOTOR_PWM, speed);
+  digitalWrite(FRONT_RIGHT_MOTOR_DIR, LOW);
   analogWrite(FRONT_RIGHT_MOTOR_PWM, 0);
-  digitalWrite(REAR_LEFT_MOTOR_DIR, 0);
+  digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);
   analogWrite(REAR_LEFT_MOTOR_PWM, 0);
-  digitalWrite(REAR_RIGHT_MOTOR_DIR, 0);
-  analogWrite(REAR_RIGHT_MOTOR_PWM, 1); 
+  digitalWrite(REAR_RIGHT_MOTOR_DIR, HIGH);
+  analogWrite(REAR_RIGHT_MOTOR_PWM, speed); 
 
   #ifdef DEBUG
   Serial.println("Move Left Backward");
@@ -227,13 +262,13 @@ void moveLeftBackward(uint8_t speed) {
 }
 
 void moveRightBackward(uint8_t speed) {
-  digitalWrite(FRONT_LEFT_MOTOR_DIR, 0);
+  digitalWrite(FRONT_LEFT_MOTOR_DIR, LOW);
   analogWrite(FRONT_LEFT_MOTOR_PWM, 0);
-  digitalWrite(FRONT_RIGHT_MOTOR_DIR, 1);
-  analogWrite(FRONT_RIGHT_MOTOR_PWM, 0);
-  digitalWrite(REAR_LEFT_MOTOR_DIR, 1);
-  analogWrite(REAR_LEFT_MOTOR_PWM, 0);
-  digitalWrite(REAR_RIGHT_MOTOR_DIR, 0);
+  digitalWrite(FRONT_RIGHT_MOTOR_DIR, HIGH);
+  analogWrite(FRONT_RIGHT_MOTOR_PWM, speed);
+  digitalWrite(REAR_LEFT_MOTOR_DIR, HIGH);
+  analogWrite(REAR_LEFT_MOTOR_PWM, speed);
+  digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
   analogWrite(REAR_RIGHT_MOTOR_PWM, 0); 
 
   #ifdef DEBUG
@@ -242,14 +277,14 @@ void moveRightBackward(uint8_t speed) {
 }
 
 void rotateLeft(uint8_t speed) {
-  digitalWrite(FRONT_LEFT_MOTOR_DIR, 1);
-  analogWrite(FRONT_LEFT_MOTOR_PWM, 0);
-  digitalWrite(FRONT_RIGHT_MOTOR_DIR, 0);
-  analogWrite(FRONT_RIGHT_MOTOR_PWM, 0);
-  digitalWrite(REAR_LEFT_MOTOR_DIR, 1);
-  analogWrite(REAR_LEFT_MOTOR_PWM, 0);
-  digitalWrite(REAR_RIGHT_MOTOR_DIR, 0);
-  analogWrite(REAR_RIGHT_MOTOR_PWM, 0); 
+  digitalWrite(FRONT_LEFT_MOTOR_DIR, HIGH);
+  analogWrite(FRONT_LEFT_MOTOR_PWM, speed);
+  digitalWrite(FRONT_RIGHT_MOTOR_DIR, LOW);
+  analogWrite(FRONT_RIGHT_MOTOR_PWM, speed);
+  digitalWrite(REAR_LEFT_MOTOR_DIR, HIGH);
+  analogWrite(REAR_LEFT_MOTOR_PWM, speed);
+  digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
+  analogWrite(REAR_RIGHT_MOTOR_PWM, speed); 
 
   #ifdef DEBUG
   Serial.println("Rotate Left");
@@ -257,14 +292,14 @@ void rotateLeft(uint8_t speed) {
 }
 
 void rotateRight(uint8_t speed) {
-  digitalWrite(FRONT_LEFT_MOTOR_DIR, 0);
-  analogWrite(FRONT_LEFT_MOTOR_PWM, 0);
-  digitalWrite(FRONT_RIGHT_MOTOR_DIR, 1);
-  analogWrite(FRONT_RIGHT_MOTOR_PWM, 0);
-  digitalWrite(REAR_LEFT_MOTOR_DIR, 0);
-  analogWrite(REAR_LEFT_MOTOR_PWM, 0);
-  digitalWrite(REAR_RIGHT_MOTOR_DIR, 1);
-  analogWrite(REAR_RIGHT_MOTOR_PWM, 0); 
+  digitalWrite(FRONT_LEFT_MOTOR_DIR, LOW);
+  analogWrite(FRONT_LEFT_MOTOR_PWM, speed);
+  digitalWrite(FRONT_RIGHT_MOTOR_DIR, HIGH);
+  analogWrite(FRONT_RIGHT_MOTOR_PWM, speed);
+  digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);
+  analogWrite(REAR_LEFT_MOTOR_PWM, speed);
+  digitalWrite(REAR_RIGHT_MOTOR_DIR, HIGH);
+  analogWrite(REAR_RIGHT_MOTOR_PWM, speed); 
 
   #ifdef DEBUG
   Serial.println("Rotate Right");
@@ -272,8 +307,8 @@ void rotateRight(uint8_t speed) {
 }
 
 void up() {
-  digitalWrite(ELEVATE_MOTOR_DIR, 0);
-  analogWrite(ELEVATE_MOTOR_PWM, 0);
+  digitalWrite(ELEVATE_MOTOR_DIR, LOW);
+  analogWrite(ELEVATE_MOTOR_PWM, 255);
 
   #ifdef DEBUG
   Serial.println("Up");
@@ -281,8 +316,8 @@ void up() {
 }
 
 void down() {
-  digitalWrite(ELEVATE_MOTOR_DIR, 1);
-  analogWrite(ELEVATE_MOTOR_PWM, 0);
+  digitalWrite(ELEVATE_MOTOR_DIR, HIGH);
+  analogWrite(ELEVATE_MOTOR_PWM, 255);
   
   #ifdef DEBUG
   Serial.println("Down");
@@ -307,12 +342,12 @@ void release() {
   #endif
 }
 
-void openArm() {
+void openHand() {
   leftFinger.write(90);
   rightFinger.write(90);
 
   #ifdef DEBUG
-  Serial.println("Grab");
+  Serial.println("Open Hand");
   #endif
 }
 
@@ -343,13 +378,33 @@ void stand() {
   // digitalWrite(REAR_LEFT_MOTOR_DIR, 0);
   // digitalWrite(REAR_RIGHT_MOTOR_DIR, 0);
 
+  digitalWrite(ELEVATE_MOTOR_DIR, LOW);
+  analogWrite(ELEVATE_MOTOR_PWM, 0);
+
   #ifdef DEBUG
   Serial.println("Stand");
   #endif
 }
 
-void beep() {
-
+void beep(uint16_t duration, uint16_t repeat) {
+  if ((duration < 1) || (repeat < 1))
+    return;
+  if (repeat == 1) {
+    digitalWrite(BUZZER, HIGH);
+    delay(duration);
+    digitalWrite(BUZZER, LOW);
+  }
+  else {
+    for (uint16_t i = 0; i < repeat - 1; i++) {
+      digitalWrite(BUZZER, HIGH);
+      delay(duration);
+      digitalWrite(BUZZER, LOW);
+      delay(duration);
+    }
+    digitalWrite(BUZZER, HIGH);
+    delay(duration);
+    digitalWrite(BUZZER, LOW);
+  }
 }
 
 void setUpPinout() {
