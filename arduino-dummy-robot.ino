@@ -1,5 +1,8 @@
-#include "PS2X_lib.h"
+#include <Adafruit_BNO055.h>
+#include <Adafruit_Sensor.h>
 #include <Servo.h>
+#include <Wire.h>
+#include "PS2X_lib.h"
 
 // Comment out the bellow line to disable debug logging
 #define DEBUG
@@ -50,6 +53,8 @@
 
 PS2X controller;
 
+Adafruit_BNO055 compass = Adafruit_BNO055(55, 0x28);
+
 Servo leftFinger;
 Servo rightFinger;
 
@@ -70,12 +75,18 @@ int rightJoystickMagnitude = 0;
 
 void setup() {
   setUpPinout();
-  Serial.begin(115200);
   configController();
+  configCompass();
+  Serial.begin(115200);
   delay(100);
 }
 
 void loop() {
+  sensors_event_t orientationData, accelData, magData, gyroData;
+  compass.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
+
+  Serial.print("Heading: "); Serial.print(orientationData.orientation.x); Serial.print(" --- ");
+
   if ((controllerError == CONTROLLER_NOT_FOUND) || (controllerType == GUITAR_HERO_CONTROLLER))
     return;
   else {
@@ -503,4 +514,13 @@ void configController() {
       Serial.print("Wireless Sony DualShock Controller");
       break;
   }
+}
+
+void configCompass() {
+  if (!compass.begin())
+    Serial.println("No BNO055 found!");
+
+  compass.setMode(adafruit_bno055_opmode_t::OPERATION_MODE_IMUPLUS);
+  delay(50);
+  compass.setExtCrystalUse(true);
 }
