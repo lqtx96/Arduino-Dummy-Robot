@@ -129,50 +129,40 @@ void loop() {
       Serial.print(", Left angle: "); Serial.print(leftJoystickAngle);
       Serial.print(", Left magnitude: "); Serial.print(leftJoystickMagnitude); Serial.print(" --- ");
 
-      if ((leftJoystickAngle >= 68) && (leftJoystickAngle < 112)) {
+      if ((leftJoystickAngle >= 68) && (leftJoystickAngle < 112))
         moveForward(leftJoystickMagnitude);
-      }
-      else if ((leftJoystickAngle >= 112) && (leftJoystickAngle < 158)) {
+      else if ((leftJoystickAngle >= 112) && (leftJoystickAngle < 158))
         moveLeftForward(leftJoystickMagnitude);
-      }
-      else if (((leftJoystickAngle >= 158) && (leftJoystickAngle <= 180)) || ((leftJoystickAngle >= -179) && (leftJoystickAngle < -158))) {
+      else if (((leftJoystickAngle >= 158) && (leftJoystickAngle <= 180)) || ((leftJoystickAngle >= -179) && (leftJoystickAngle < -158)))
         moveLeft(leftJoystickMagnitude);
-      }
-      else if ((leftJoystickAngle >= -158) && (leftJoystickAngle < -112)) {
+      else if ((leftJoystickAngle >= -158) && (leftJoystickAngle < -112))
         moveLeftBackward(leftJoystickMagnitude);
-      }
-      else if ((leftJoystickAngle >= -112) && (leftJoystickAngle < -68)) {
+      else if ((leftJoystickAngle >= -112) && (leftJoystickAngle < -68))
         moveBackward(leftJoystickMagnitude);
-      }
-      else if ((leftJoystickAngle >= -68) && (leftJoystickAngle < -22)) {
+      else if ((leftJoystickAngle >= -68) && (leftJoystickAngle < -22))
         moveRightBackward(leftJoystickMagnitude);
-      }
-      else if (((leftJoystickAngle >= -22) && (leftJoystickAngle <= 0)) || ((leftJoystickAngle >= 1) && (leftJoystickAngle < 22))) {
+      else if (((leftJoystickAngle >= -22) && (leftJoystickAngle <= 0)) || ((leftJoystickAngle >= 1) && (leftJoystickAngle < 22)))
         moveRight(leftJoystickMagnitude);
-      }
-      else if ((leftJoystickAngle >= 22) && (leftJoystickAngle < 68)) {
+      else if ((leftJoystickAngle >= 22) && (leftJoystickAngle < 68))
         moveRightForward(leftJoystickMagnitude);
-      }
-    }
-    if (controller.Button(PSB_TRIANGLE)) {
-      up();
-    }
-    else if (controller.Button(PSB_CROSS)) {
-      down();
-    }
-    if (controller.Button(PSB_L1)) {
-      grab();
-    }
-    else if (controller.Button(PSB_L2)) {
-      release();
-    }
-    if (controller.Button(PSB_R1)) {
-      fanOn();
-    }
-    else if (controller.Button(PSB_R2)) {
-      fanOff();
     }
 
+    if (controller.Button(PSB_TRIANGLE))
+      up();
+    else if (controller.Button(PSB_CROSS))
+      down();
+
+    if (controller.Button(PSB_L1))
+      grab();
+    else if (controller.Button(PSB_L2))
+      release();
+    else if (controller.Button(PSB_PAD_RIGHT))
+      spread();
+
+    if (controller.Button(PSB_R1))
+      fanOn();
+    else if (controller.Button(PSB_R2))
+      fanOff();
   }
   delay(50);
 }
