@@ -80,71 +80,125 @@ void loop() {
     return;
   else {
     controller.read_gamepad();
-    
-    // Serial.print("SELECT:");   Serial.print(controller.Button(PSB_SELECT));   Serial.print(", ");
-    // Serial.print("START:");    Serial.print(controller.Button(PSB_START));    Serial.print(", ");
-    // Serial.print("UP:");       Serial.print(controller.Button(PSB_PAD_UP));       Serial.print(", ");
-    // Serial.print("DOWN:");     Serial.print(controller.Button(PSB_PAD_DOWN));     Serial.print(", ");
-    // Serial.print("LEFT:");     Serial.print(controller.Button(PSB_PAD_LEFT));     Serial.print(", ");
-    // Serial.print("RIGHT:");    Serial.print(controller.Button(PSB_PAD_RIGHT));    Serial.print(", ");
-    // Serial.print("TRIANGLE:"); Serial.print(controller.Button(PSB_TRIANGLE)); Serial.print(", ");
-    // Serial.print("CIRCLE:");   Serial.print(controller.Button(PSB_CIRCLE));   Serial.print(", ");
-    // Serial.print("CROSS:");    Serial.print(controller.Button(PSB_CROSS));    Serial.print(", ");
-    // Serial.print("SQUARE:");   Serial.print(controller.Button(PSB_SQUARE));   Serial.print(", ");
-    // Serial.print("L1:");       Serial.print(controller.Button(PSB_L1));       Serial.print(", ");
-    // Serial.print("L2:");       Serial.print(controller.Button(PSB_L2));       Serial.print(", ");
-    // Serial.print("L3:");       Serial.print(controller.Button(PSB_L3));       Serial.print(", ");
-    // Serial.print("R1:");       Serial.print(controller.Button(PSB_R1));       Serial.print(", ");
-    // Serial.print("R2:");       Serial.print(controller.Button(PSB_R2));       Serial.print(", ");
-    // Serial.print("R3:");       Serial.print(controller.Button(PSB_R3));       Serial.print(", ");
+
     leftJoystickX = controller.Analog(PSS_LX);
     leftJoystickY = controller.Analog(PSS_LY);
     rightJoystickX = controller.Analog(PSS_RX);
     rightJoystickY = controller.Analog(PSS_RY);
+
+    #ifdef DEBUG
     Serial.print("LX:"); Serial.print(leftJoystickX); Serial.print(", ");
     Serial.print("LY:"); Serial.print(leftJoystickY); Serial.print(", ");
     Serial.print("RX:"); Serial.print(rightJoystickX); Serial.print(", ");
     Serial.print("RY:"); Serial.print(rightJoystickY); Serial.print(" --- ");
+    #endif // DEBUG
 
     if (((leftJoystickX > 112) && (leftJoystickX < 144) && (leftJoystickY > 112) && (leftJoystickY < 144)) && ((rightJoystickX > 112) && (rightJoystickX < 144))) {
+      #ifdef DEBUG
       Serial.print(", ");
       Serial.print("Center/No movement --- ");
       stand();
+      #endif // DEBUG
     }
 
     else if ((rightJoystickX < 112)) {
-      Serial.print((127 - rightJoystickX)*2); Serial.print(" --- ");
-      rotateLeft((127 - rightJoystickX)*2);
+      if (controller.Button(PSB_R1))
+        rotateLeft((127 - rightJoystickX)*2);
+      else if (controller.Button(PSB_L1))
+        rotateLeft((127 - rightJoystickX)/2);
+      else
+        rotateLeft(127 - rightJoystickX);
     }
 
     else if (rightJoystickX > 144) {
-      Serial.print((rightJoystickX - 127)*2); Serial.print(" --- ");
-      rotateRight((rightJoystickX - 128)*2);
+      if (controller.Button(PSB_R1))
+        rotateRight((127 - rightJoystickX)*2);
+      else if (controller.Button(PSB_L1))
+        rotateRight((127 - rightJoystickX)/2);
+      else
+        rotateRight(127 - rightJoystickX);
     }
 
     else {
       leftJoystickAngle = atan2(-(leftJoystickY - 128), (leftJoystickX - 128)) * 180 / PI;
       leftJoystickMagnitude = constrain(sqrt((leftJoystickX - 128) * (leftJoystickX - 128) + (leftJoystickY - 128) * (leftJoystickY - 128)), 0, 128) * 2 - 1;
 
+      #ifdef DEBUG
       Serial.print(", Left angle: "); Serial.print(leftJoystickAngle);
       Serial.print(", Left magnitude: "); Serial.print(leftJoystickMagnitude); Serial.print(" --- ");
+      #endif // DEBUG
 
-      if ((leftJoystickAngle >= 68) && (leftJoystickAngle < 112))
-        moveForward(leftJoystickMagnitude);
-      else if ((leftJoystickAngle >= 112) && (leftJoystickAngle < 158))
-        moveLeftForward(leftJoystickMagnitude);
-      else if (((leftJoystickAngle >= 158) && (leftJoystickAngle <= 180)) || ((leftJoystickAngle >= -179) && (leftJoystickAngle < -158)))
-        moveLeft(leftJoystickMagnitude);
-      else if ((leftJoystickAngle >= -158) && (leftJoystickAngle < -112))
-        moveLeftBackward(leftJoystickMagnitude);
-      else if ((leftJoystickAngle >= -112) && (leftJoystickAngle < -68))
-        moveBackward(leftJoystickMagnitude);
-      else if ((leftJoystickAngle >= -68) && (leftJoystickAngle < -22))
-        moveRightBackward(leftJoystickMagnitude);
-      else if (((leftJoystickAngle >= -22) && (leftJoystickAngle <= 0)) || ((leftJoystickAngle >= 1) && (leftJoystickAngle < 22)))
-        moveRight(leftJoystickMagnitude);
-      else if ((leftJoystickAngle >= 22) && (leftJoystickAngle < 68))
-        moveRightForward(leftJoystickMagnitude);
+      if ((leftJoystickAngle >= 68) && (leftJoystickAngle < 112)) {
+        if (controller.Button(PSB_R1))
+          moveForward(leftJoystickMagnitude);
+        else if (controller.Button(PSB_L1))
+          moveForward(leftJoystickMagnitude/4);
+        else
+          moveForward(leftJoystickMagnitude/2);
+      }
+
+      else if ((leftJoystickAngle >= 112) && (leftJoystickAngle < 158)) {
+        if (controller.Button(PSB_R1))
+          moveLeftForward(leftJoystickMagnitude);
+        else if (controller.Button(PSB_L1))
+          moveLeftForward(leftJoystickMagnitude/4);
+        else
+          moveLeftForward(leftJoystickMagnitude/2);
+      }
+
+      else if (((leftJoystickAngle >= 158) && (leftJoystickAngle <= 180)) || ((leftJoystickAngle >= -179) && (leftJoystickAngle < -158))) {
+        if (controller.Button(PSB_R1))
+          moveLeft(leftJoystickMagnitude);
+        else if (controller.Button(PSB_L1))
+          moveLeft(leftJoystickMagnitude/4);
+        else
+          moveLeft(leftJoystickMagnitude/2);
+      }
+
+      else if ((leftJoystickAngle >= -158) && (leftJoystickAngle < -112)) {
+        if (controller.Button(PSB_R1))
+          moveLeftBackward(leftJoystickMagnitude);
+        else if (controller.Button(PSB_L1))
+          moveLeftBackward(leftJoystickMagnitude/4);
+        else
+          moveLeftBackward(leftJoystickMagnitude/2);
+      }
+
+      else if ((leftJoystickAngle >= -112) && (leftJoystickAngle < -68)) {
+        if (controller.Button(PSB_R1))
+          moveBackward(leftJoystickMagnitude);
+        else if (controller.Button(PSB_L1))
+          moveBackward(leftJoystickMagnitude/4);
+        else
+          moveBackward(leftJoystickMagnitude/2);
+      }
+
+      else if ((leftJoystickAngle >= -68) && (leftJoystickAngle < -22)) {
+        if (controller.Button(PSB_R1))
+          moveRightBackward(leftJoystickMagnitude);
+        else if (controller.Button(PSB_L1))
+          moveRightBackward(leftJoystickMagnitude/4);
+        else
+          moveRightBackward(leftJoystickMagnitude/2);
+      }
+
+      else if (((leftJoystickAngle >= -22) && (leftJoystickAngle <= 0)) || ((leftJoystickAngle >= 1) && (leftJoystickAngle < 22))) {
+        if (controller.Button(PSB_R1))
+          moveRight(leftJoystickMagnitude);
+        else if (controller.Button(PSB_L1))
+          moveRight(leftJoystickMagnitude/4);
+        else
+          moveRight(leftJoystickMagnitude/2);
+      }
+
+      else if ((leftJoystickAngle >= 22) && (leftJoystickAngle < 68)) {
+        if (controller.Button(PSB_R1))
+          moveRightForward(leftJoystickMagnitude);
+        else if (controller.Button(PSB_L1))
+          moveRightForward(leftJoystickMagnitude/4);
+        else
+          moveRightForward(leftJoystickMagnitude/2);
+      }
     }
 
     if (controller.Button(PSB_TRIANGLE))
@@ -152,19 +206,19 @@ void loop() {
     else if (controller.Button(PSB_CROSS))
       down();
 
-    if (controller.Button(PSB_L1))
+    if (controller.Button(PSB_PAD_RIGHT))
       grab();
-    else if (controller.Button(PSB_L2))
+    else if (controller.Button(PSB_PAD_LEFT))
       release();
-    else if (controller.Button(PSB_PAD_RIGHT))
+    else if (controller.Button(PSB_PAD_UP))
       spread();
 
-    if (controller.Button(PSB_R1))
+    if (controller.Button(PSB_SQUARE))
       fanOn();
-    else if (controller.Button(PSB_R2))
+    else if (controller.Button(PSB_CIRCLE))
       fanOff();
   }
-  delay(50);
+  // delay(10);
 }
 
 void moveForward(uint8_t speed) {
@@ -175,7 +229,7 @@ void moveForward(uint8_t speed) {
   analogWrite(REAR_LEFT_MOTOR_PWM, speed);        analogWrite(REAR_RIGHT_MOTOR_PWM, speed);
 
   #ifdef DEBUG
-  Serial.println("Move Forward");
+  Serial.print("Move Forward: "); Serial.println(speed);
   #endif
 }
 
@@ -187,7 +241,7 @@ void moveBackward(uint8_t speed) {
   analogWrite(REAR_LEFT_MOTOR_PWM, speed);        analogWrite(REAR_RIGHT_MOTOR_PWM, speed);
 
   #ifdef DEBUG
-  Serial.println("Move Backward");
+  Serial.print("Move Backward: "); Serial.println(speed);
   #endif
 }
 
@@ -199,7 +253,7 @@ void moveLeft(uint8_t speed) {
   analogWrite(REAR_LEFT_MOTOR_PWM, speed);        analogWrite(REAR_RIGHT_MOTOR_PWM, speed); 
 
   #ifdef DEBUG
-  Serial.println("Move Left");
+  Serial.print("Move Left: "); Serial.println(speed);
   #endif
 }
 
@@ -211,7 +265,7 @@ void moveRight(uint8_t speed) {
   analogWrite(REAR_LEFT_MOTOR_PWM, speed);        analogWrite(REAR_RIGHT_MOTOR_PWM, speed);
 
   #ifdef DEBUG
-  Serial.println("Move Right");
+  Serial.print("Move Right");  Serial.println(speed);
   #endif
 }
 
@@ -223,7 +277,7 @@ void moveLeftForward(uint8_t speed) {
   analogWrite(REAR_LEFT_MOTOR_PWM, speed);         analogWrite(REAR_RIGHT_MOTOR_PWM, 0);
 
   #ifdef DEBUG
-  Serial.println("Move Left Forward");
+  Serial.print("Move Left Forward: ");  Serial.println(speed);
   #endif
 }
 
@@ -235,7 +289,7 @@ void moveRightForward(uint8_t speed) {
   analogWrite(REAR_LEFT_MOTOR_PWM, 0);            analogWrite(REAR_RIGHT_MOTOR_PWM, speed);
 
   #ifdef DEBUG
-  Serial.println("Move Right Forward");
+  Serial.print("Move Right Forward: ");  Serial.println(speed);
   #endif
 }
 
@@ -247,7 +301,7 @@ void moveLeftBackward(uint8_t speed) {
   analogWrite(REAR_LEFT_MOTOR_PWM, 0);             analogWrite(REAR_RIGHT_MOTOR_PWM, speed);
 
   #ifdef DEBUG
-  Serial.println("Move Left Backward");
+  Serial.print("Move Left Backward: "); Serial.println(speed);
   #endif
 }
 
@@ -259,7 +313,7 @@ void moveRightBackward(uint8_t speed) {
   analogWrite(REAR_LEFT_MOTOR_PWM, speed);         analogWrite(REAR_RIGHT_MOTOR_PWM, 0);   
 
   #ifdef DEBUG
-  Serial.println("Move Right Backward");
+  Serial.print("Move Right Backward: ");  Serial.println(speed);
   #endif
 }
 
@@ -271,7 +325,7 @@ void rotateLeft(uint8_t speed) {
   analogWrite(REAR_LEFT_MOTOR_PWM, speed);         analogWrite(REAR_RIGHT_MOTOR_PWM, speed);   
 
   #ifdef DEBUG
-  Serial.println("Rotate Left");
+  Serial.print("Rotate Left: ");  Serial.println(speed);
   #endif
 }
 
@@ -283,7 +337,7 @@ void rotateRight(uint8_t speed) {
   analogWrite(REAR_LEFT_MOTOR_PWM, speed);         analogWrite(REAR_RIGHT_MOTOR_PWM, speed);   
 
   #ifdef DEBUG
-  Serial.println("Rotate Right");
+  Serial.print("Rotate Right: ");  Serial.println(speed);
   #endif
 }
 
@@ -319,7 +373,7 @@ void release() {
   rightFinger.write(120);
 
   #ifdef DEBUG
-  Serial.println("Grab");
+  Serial.println("Release");
   #endif
 }
 
@@ -328,7 +382,7 @@ void spread() {
   rightFinger.write(90);
 
   #ifdef DEBUG
-  Serial.println("Open Hand");
+  Serial.println("Spread");
   #endif
 }
 
