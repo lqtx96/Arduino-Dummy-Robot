@@ -5,7 +5,7 @@
 #define DEBUG
 
 #define CONTROLLER_DATA_PIN       51  // MOSI
-#define CONTROLLER_COMMAND_PIN   50  // MISO
+#define CONTROLLER_COMMAND_PIN    50  // MISO
 #define CONTROLLER_ATTENTION_PIN  42  // SELECT
 #define CONTROLLER_CLOCK_PIN      52  // CLOCK
 
@@ -154,19 +154,35 @@ void loop() {
         moveRightForward(leftJoystickMagnitude);
       }
     }
+    if (controller.Button(PSB_TRIANGLE)) {
+      up();
+    }
+    else if (controller.Button(PSB_CROSS)) {
+      down();
+    }
+    if (controller.Button(PSB_L1)) {
+      grab();
+    }
+    else if (controller.Button(PSB_L2)) {
+      release();
+    }
+    if (controller.Button(PSB_R1)) {
+      fanOn();
+    }
+    else if (controller.Button(PSB_R2)) {
+      fanOff();
+    }
+
   }
   delay(50);
 }
 
 void moveForward(uint8_t speed) {
-  digitalWrite(FRONT_LEFT_MOTOR_DIR, LOW);
-  analogWrite(FRONT_LEFT_MOTOR_PWM, speed);
-  digitalWrite(FRONT_RIGHT_MOTOR_DIR, LOW);
-  analogWrite(FRONT_RIGHT_MOTOR_PWM, speed);
-  digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);
-  analogWrite(REAR_LEFT_MOTOR_PWM, speed);
-  digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
-  analogWrite(REAR_RIGHT_MOTOR_PWM, speed); 
+  digitalWrite(FRONT_LEFT_MOTOR_DIR, HIGH);       digitalWrite(FRONT_RIGHT_MOTOR_DIR, HIGH);
+  analogWrite(FRONT_LEFT_MOTOR_PWM, speed);       analogWrite(FRONT_RIGHT_MOTOR_PWM, speed);
+
+  digitalWrite(REAR_LEFT_MOTOR_DIR, HIGH);        digitalWrite(REAR_RIGHT_MOTOR_DIR, HIGH);
+  analogWrite(REAR_LEFT_MOTOR_PWM, speed);        analogWrite(REAR_RIGHT_MOTOR_PWM, speed);
 
   #ifdef DEBUG
   Serial.println("Move Forward");
@@ -174,14 +190,11 @@ void moveForward(uint8_t speed) {
 }
 
 void moveBackward(uint8_t speed) {
-  digitalWrite(FRONT_LEFT_MOTOR_DIR, HIGH);
-  analogWrite(FRONT_LEFT_MOTOR_PWM, speed);
-  digitalWrite(FRONT_RIGHT_MOTOR_DIR, HIGH);
-  analogWrite(FRONT_RIGHT_MOTOR_PWM, speed);
-  digitalWrite(REAR_LEFT_MOTOR_DIR, HIGH);
-  analogWrite(REAR_LEFT_MOTOR_PWM, speed);
-  digitalWrite(REAR_RIGHT_MOTOR_DIR, HIGH);
-  analogWrite(REAR_RIGHT_MOTOR_PWM, speed); 
+  digitalWrite(FRONT_LEFT_MOTOR_DIR, LOW);        digitalWrite(FRONT_RIGHT_MOTOR_DIR, LOW);
+  analogWrite(FRONT_LEFT_MOTOR_PWM, speed);       analogWrite(FRONT_RIGHT_MOTOR_PWM, speed);
+
+  digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);         digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
+  analogWrite(REAR_LEFT_MOTOR_PWM, speed);        analogWrite(REAR_RIGHT_MOTOR_PWM, speed);
 
   #ifdef DEBUG
   Serial.println("Move Backward");
@@ -189,14 +202,11 @@ void moveBackward(uint8_t speed) {
 }
 
 void moveLeft(uint8_t speed) {
-  digitalWrite(FRONT_LEFT_MOTOR_DIR, HIGH);
-  analogWrite(FRONT_LEFT_MOTOR_PWM, speed);
-  digitalWrite(FRONT_RIGHT_MOTOR_DIR, LOW);
-  analogWrite(FRONT_RIGHT_MOTOR_PWM, speed);
-  digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);
-  analogWrite(REAR_LEFT_MOTOR_PWM, speed);
-  digitalWrite(REAR_RIGHT_MOTOR_DIR, HIGH);
-  analogWrite(REAR_RIGHT_MOTOR_PWM, speed); 
+  digitalWrite(FRONT_LEFT_MOTOR_DIR, LOW);        digitalWrite(FRONT_RIGHT_MOTOR_DIR, HIGH);
+  analogWrite(FRONT_LEFT_MOTOR_PWM, speed);       analogWrite(FRONT_RIGHT_MOTOR_PWM, speed);
+
+  digitalWrite(REAR_LEFT_MOTOR_DIR, HIGH);        digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
+  analogWrite(REAR_LEFT_MOTOR_PWM, speed);        analogWrite(REAR_RIGHT_MOTOR_PWM, speed); 
 
   #ifdef DEBUG
   Serial.println("Move Left");
@@ -204,14 +214,11 @@ void moveLeft(uint8_t speed) {
 }
 
 void moveRight(uint8_t speed) {
-  digitalWrite(FRONT_LEFT_MOTOR_DIR, LOW);
-  analogWrite(FRONT_LEFT_MOTOR_PWM, speed);
-  digitalWrite(FRONT_RIGHT_MOTOR_DIR, HIGH);
-  analogWrite(FRONT_RIGHT_MOTOR_PWM, speed);
-  digitalWrite(REAR_LEFT_MOTOR_DIR, HIGH);
-  analogWrite(REAR_LEFT_MOTOR_PWM, speed);
-  digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
-  analogWrite(REAR_RIGHT_MOTOR_PWM, speed); 
+  digitalWrite(FRONT_LEFT_MOTOR_DIR, LOW);        digitalWrite(FRONT_RIGHT_MOTOR_DIR, HIGH);
+  analogWrite(FRONT_LEFT_MOTOR_PWM, speed);       analogWrite(FRONT_RIGHT_MOTOR_PWM, speed);
+
+  digitalWrite(REAR_LEFT_MOTOR_DIR, HIGH);        digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
+  analogWrite(REAR_LEFT_MOTOR_PWM, speed);        analogWrite(REAR_RIGHT_MOTOR_PWM, speed);
 
   #ifdef DEBUG
   Serial.println("Move Right");
@@ -219,14 +226,11 @@ void moveRight(uint8_t speed) {
 }
 
 void moveLeftForward(uint8_t speed) {
-  digitalWrite(FRONT_LEFT_MOTOR_DIR, LOW);
-  analogWrite(FRONT_LEFT_MOTOR_PWM, 0);
-  digitalWrite(FRONT_RIGHT_MOTOR_DIR, LOW);
-  analogWrite(FRONT_RIGHT_MOTOR_PWM, speed);
-  digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);
-  analogWrite(REAR_LEFT_MOTOR_PWM, speed);
-  digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
-  analogWrite(REAR_RIGHT_MOTOR_PWM, 0); 
+  digitalWrite(FRONT_LEFT_MOTOR_DIR, LOW);         digitalWrite(FRONT_RIGHT_MOTOR_DIR, HIGH);
+  analogWrite(FRONT_LEFT_MOTOR_PWM, 0);            analogWrite(FRONT_RIGHT_MOTOR_PWM, speed);
+
+  digitalWrite(REAR_LEFT_MOTOR_DIR, HIGH);         digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
+  analogWrite(REAR_LEFT_MOTOR_PWM, speed);         analogWrite(REAR_RIGHT_MOTOR_PWM, 0);
 
   #ifdef DEBUG
   Serial.println("Move Left Forward");
@@ -234,14 +238,11 @@ void moveLeftForward(uint8_t speed) {
 }
 
 void moveRightForward(uint8_t speed) {
-  digitalWrite(FRONT_LEFT_MOTOR_DIR, LOW);
-  analogWrite(FRONT_LEFT_MOTOR_PWM, speed);
-  digitalWrite(FRONT_RIGHT_MOTOR_DIR, LOW);
-  analogWrite(FRONT_RIGHT_MOTOR_PWM, 0);
-  digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);
-  analogWrite(REAR_LEFT_MOTOR_PWM, 0);
-  digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
-  analogWrite(REAR_RIGHT_MOTOR_PWM, speed); 
+  digitalWrite(FRONT_LEFT_MOTOR_DIR, HIGH);       digitalWrite(FRONT_RIGHT_MOTOR_DIR, LOW);
+  analogWrite(FRONT_LEFT_MOTOR_PWM, speed);       analogWrite(FRONT_RIGHT_MOTOR_PWM, 0);
+
+  digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);         digitalWrite(REAR_RIGHT_MOTOR_DIR, HIGH);
+  analogWrite(REAR_LEFT_MOTOR_PWM, 0);            analogWrite(REAR_RIGHT_MOTOR_PWM, speed);
 
   #ifdef DEBUG
   Serial.println("Move Right Forward");
@@ -249,14 +250,11 @@ void moveRightForward(uint8_t speed) {
 }
 
 void moveLeftBackward(uint8_t speed) {
-  digitalWrite(FRONT_LEFT_MOTOR_DIR, HIGH);
-  analogWrite(FRONT_LEFT_MOTOR_PWM, speed);
-  digitalWrite(FRONT_RIGHT_MOTOR_DIR, LOW);
-  analogWrite(FRONT_RIGHT_MOTOR_PWM, 0);
-  digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);
-  analogWrite(REAR_LEFT_MOTOR_PWM, 0);
-  digitalWrite(REAR_RIGHT_MOTOR_DIR, HIGH);
-  analogWrite(REAR_RIGHT_MOTOR_PWM, speed); 
+  digitalWrite(FRONT_LEFT_MOTOR_DIR, LOW);         digitalWrite(FRONT_RIGHT_MOTOR_DIR, LOW);
+  analogWrite(FRONT_LEFT_MOTOR_PWM, speed);        analogWrite(FRONT_RIGHT_MOTOR_PWM, 0);
+
+  digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);          digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
+  analogWrite(REAR_LEFT_MOTOR_PWM, 0);             analogWrite(REAR_RIGHT_MOTOR_PWM, speed);
 
   #ifdef DEBUG
   Serial.println("Move Left Backward");
@@ -264,14 +262,11 @@ void moveLeftBackward(uint8_t speed) {
 }
 
 void moveRightBackward(uint8_t speed) {
-  digitalWrite(FRONT_LEFT_MOTOR_DIR, LOW);
-  analogWrite(FRONT_LEFT_MOTOR_PWM, 0);
-  digitalWrite(FRONT_RIGHT_MOTOR_DIR, HIGH);
-  analogWrite(FRONT_RIGHT_MOTOR_PWM, speed);
-  digitalWrite(REAR_LEFT_MOTOR_DIR, HIGH);
-  analogWrite(REAR_LEFT_MOTOR_PWM, speed);
-  digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
-  analogWrite(REAR_RIGHT_MOTOR_PWM, 0); 
+  digitalWrite(FRONT_LEFT_MOTOR_DIR, LOW);         digitalWrite(FRONT_RIGHT_MOTOR_DIR, LOW);
+  analogWrite(FRONT_LEFT_MOTOR_PWM, 0);            analogWrite(FRONT_RIGHT_MOTOR_PWM, speed);
+  
+  digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);          digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
+  analogWrite(REAR_LEFT_MOTOR_PWM, speed);         analogWrite(REAR_RIGHT_MOTOR_PWM, 0);   
 
   #ifdef DEBUG
   Serial.println("Move Right Backward");
@@ -279,14 +274,11 @@ void moveRightBackward(uint8_t speed) {
 }
 
 void rotateLeft(uint8_t speed) {
-  digitalWrite(FRONT_LEFT_MOTOR_DIR, HIGH);
-  analogWrite(FRONT_LEFT_MOTOR_PWM, speed);
-  digitalWrite(FRONT_RIGHT_MOTOR_DIR, LOW);
-  analogWrite(FRONT_RIGHT_MOTOR_PWM, speed);
-  digitalWrite(REAR_LEFT_MOTOR_DIR, HIGH);
-  analogWrite(REAR_LEFT_MOTOR_PWM, speed);
-  digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
-  analogWrite(REAR_RIGHT_MOTOR_PWM, speed); 
+  digitalWrite(FRONT_LEFT_MOTOR_DIR, LOW);         digitalWrite(FRONT_RIGHT_MOTOR_DIR, HIGH);
+  analogWrite(FRONT_LEFT_MOTOR_PWM, speed);        analogWrite(FRONT_RIGHT_MOTOR_PWM, speed);  
+  
+  digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);          digitalWrite(REAR_RIGHT_MOTOR_DIR, HIGH);
+  analogWrite(REAR_LEFT_MOTOR_PWM, speed);         analogWrite(REAR_RIGHT_MOTOR_PWM, speed);   
 
   #ifdef DEBUG
   Serial.println("Rotate Left");
@@ -294,14 +286,11 @@ void rotateLeft(uint8_t speed) {
 }
 
 void rotateRight(uint8_t speed) {
-  digitalWrite(FRONT_LEFT_MOTOR_DIR, LOW);
-  analogWrite(FRONT_LEFT_MOTOR_PWM, speed);
-  digitalWrite(FRONT_RIGHT_MOTOR_DIR, HIGH);
-  analogWrite(FRONT_RIGHT_MOTOR_PWM, speed);
-  digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);
-  analogWrite(REAR_LEFT_MOTOR_PWM, speed);
-  digitalWrite(REAR_RIGHT_MOTOR_DIR, HIGH);
-  analogWrite(REAR_RIGHT_MOTOR_PWM, speed); 
+  digitalWrite(FRONT_LEFT_MOTOR_DIR, HIGH);        digitalWrite(FRONT_RIGHT_MOTOR_DIR, LOW);
+  analogWrite(FRONT_LEFT_MOTOR_PWM, speed);        analogWrite(FRONT_RIGHT_MOTOR_PWM, speed);
+
+  digitalWrite(REAR_LEFT_MOTOR_DIR, HIGH);         digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
+  analogWrite(REAR_LEFT_MOTOR_PWM, speed);         analogWrite(REAR_RIGHT_MOTOR_PWM, speed);   
 
   #ifdef DEBUG
   Serial.println("Rotate Right");
@@ -344,7 +333,7 @@ void release() {
   #endif
 }
 
-void openHand() {
+void spread() {
   leftFinger.write(90);
   rightFinger.write(90);
 
@@ -363,22 +352,21 @@ void fanOn() {
 }
 
 void fanOff() {
-    
+  leftFan.write(0);
+  rightFan.write(0);
+
   #ifdef DEBUG
   Serial.println("Fan Off");
   #endif
 }
 
 void stand() {
-  analogWrite(FRONT_LEFT_MOTOR_PWM, 0);
-  analogWrite(FRONT_RIGHT_MOTOR_PWM, 0);
-  analogWrite(REAR_LEFT_MOTOR_PWM, 0);
-  analogWrite(REAR_RIGHT_MOTOR_PWM, 0);
+  // digitalWrite(FRONT_LEFT_MOTOR_DIR, LOW);        digitalWrite(FRONT_RIGHT_MOTOR_DIR, LOW);
+  analogWrite(FRONT_LEFT_MOTOR_PWM, 0);           analogWrite(FRONT_RIGHT_MOTOR_PWM, 0);
 
-  // digitalWrite(FRONT_LEFT_MOTOR_DIR, 0);
-  // digitalWrite(FRONT_RIGHT_MOTOR_DIR, 0);
-  // digitalWrite(REAR_LEFT_MOTOR_DIR, 0);
-  // digitalWrite(REAR_RIGHT_MOTOR_DIR, 0);
+  // digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);        digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
+  analogWrite(REAR_LEFT_MOTOR_PWM, 0);           analogWrite(REAR_RIGHT_MOTOR_PWM, 0);
+
 
   digitalWrite(ELEVATE_MOTOR_DIR, LOW);
   analogWrite(ELEVATE_MOTOR_PWM, 0);
