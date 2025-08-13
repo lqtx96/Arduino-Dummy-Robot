@@ -5,7 +5,7 @@
 #include "PS2X_lib.h"
 
 // Comment out the bellow line to disable debug logging
-#define DEBUG
+#define DEBUG_LOG
 
 #define CONTROLLER_DATA_PIN       51  // MOSI
 #define CONTROLLER_COMMAND_PIN    50  // MISO
@@ -51,6 +51,9 @@
 #define CONTROLLER_NOT_ACCEPTING_COMMANDS 2
 #define CONTROLLER_REFUSING_TO_ENTER_PRESSURE_MODE 3
 
+bool bArmState = false;
+bool bFanState = false;
+
 PS2X controller;
 
 Adafruit_BNO055 compass = Adafruit_BNO055(55, 0x28);
@@ -75,17 +78,19 @@ int rightJoystickMagnitude = 0;
 
 void setup() {
   setUpPinout();
-  configController();
-  configCompass();
   Serial.begin(115200);
-  delay(100);
+  configController();
+  // configCompass();
+  fanOff();
+  spread();
+  beep(3, 50);
 }
 
 void loop() {
-  sensors_event_t orientationData, accelData, magData, gyroData;
-  compass.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
+  // sensors_event_t orientationData, accelData, magData, gyroData;
+  // compass.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
 
-  Serial.print("Heading: "); Serial.print(orientationData.orientation.x); Serial.print(" --- ");
+  // Serial.print("Heading: "); Serial.print(orientationData.orientation.x); Serial.print(" --- ");
 
   if ((controllerError == CONTROLLER_NOT_FOUND) || (controllerType == GUITAR_HERO_CONTROLLER))
     return;
@@ -97,19 +102,19 @@ void loop() {
     rightJoystickX = controller.Analog(PSS_RX);
     rightJoystickY = controller.Analog(PSS_RY);
 
-    #ifdef DEBUG
-    Serial.print("LX:"); Serial.print(leftJoystickX); Serial.print(", ");
-    Serial.print("LY:"); Serial.print(leftJoystickY); Serial.print(", ");
-    Serial.print("RX:"); Serial.print(rightJoystickX); Serial.print(", ");
-    Serial.print("RY:"); Serial.print(rightJoystickY); Serial.print(" --- ");
-    #endif // DEBUG
+    // #ifdef DEBUG_LOG
+    // Serial.print("LX:"); Serial.print(leftJoystickX); Serial.print(", ");
+    // Serial.print("LY:"); Serial.print(leftJoystickY); Serial.print(", ");
+    // Serial.print("RX:"); Serial.print(rightJoystickX); Serial.print(", ");
+    // Serial.print("RY:"); Serial.print(rightJoystickY); Serial.print(" --- ");
+    // #endif // DEBUG_LOG
 
-    if (((leftJoystickX > 112) && (leftJoystickX < 144) && (leftJoystickY > 112) && (leftJoystickY < 144)) && ((rightJoystickX > 112) && (rightJoystickX < 144))) {
-      #ifdef DEBUG
-      Serial.print(", ");
-      Serial.print("Center/No movement --- ");
-      stand();
-      #endif // DEBUG
+    if ((leftJoystickX  > 112) && (leftJoystickX  < 144)
+        && (leftJoystickY  > 112) && (leftJoystickY  < 144)
+        && (rightJoystickX > 112) && (rightJoystickX < 144)) {
+      // #ifdef DEBUG_LOG
+      // stand();
+      // #endif // DEBUG_LOG
     }
 
     else if ((rightJoystickX < 112)) {
@@ -136,7 +141,7 @@ void loop() {
 
       #ifdef DEBUG
       Serial.print(", Left angle: "); Serial.print(leftJoystickAngle);
-      Serial.print(", Left magnitude: "); Serial.print(leftJoystickMagnitude); Serial.print(" --- ");
+      Serial.print(", Left magnitude: "); Serial.print(leftJoystickMagnitude); Serial.println(" --- ");
       #endif // DEBUG
 
       if ((leftJoystickAngle >= 68) && (leftJoystickAngle < 112)) {
@@ -216,18 +221,39 @@ void loop() {
       up();
     else if (controller.Button(PSB_CROSS))
       down();
+    else
+      elevateOff();
 
-    if (controller.Button(PSB_PAD_RIGHT))
-      grab();
-    else if (controller.Button(PSB_PAD_LEFT))
-      release();
-    else if (controller.Button(PSB_PAD_UP))
+    if (controller.Button(PSB_SQUARE)) {
+      if (bArmState) {
+        grab();
+      }
+      else {
+        release();
+      }
+      bArmState = !bArmState;
+      beep(1, 50);
+      delay(200);
+    }
+
+    else if (controller.Button(PSB_R2)) {
       spread();
+      bArmState = true;
+      beep(1, 50);
+      delay(200);
+    }
 
-    if (controller.Button(PSB_SQUARE))
-      fanOn();
-    else if (controller.Button(PSB_CIRCLE))
-      fanOff();
+    if (controller.Button(PSB_CIRCLE)) {      
+      if (bFanState) {
+        fanOn();
+      }
+      else {
+        fanOff();
+      }
+      bFanState = !bFanState;
+      beep(1, 50);
+      delay(200);
+    }
   }
   // delay(10);
 }
@@ -239,7 +265,7 @@ void moveForward(uint8_t speed) {
   digitalWrite(REAR_LEFT_MOTOR_DIR, HIGH);        digitalWrite(REAR_RIGHT_MOTOR_DIR, HIGH);
   analogWrite(REAR_LEFT_MOTOR_PWM, speed);        analogWrite(REAR_RIGHT_MOTOR_PWM, speed);
 
-  #ifdef DEBUG
+  #ifdef DEBUG_LOG
   Serial.print("Move Forward: "); Serial.println(speed);
   #endif
 }
@@ -251,7 +277,7 @@ void moveBackward(uint8_t speed) {
   digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);         digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
   analogWrite(REAR_LEFT_MOTOR_PWM, speed);        analogWrite(REAR_RIGHT_MOTOR_PWM, speed);
 
-  #ifdef DEBUG
+  #ifdef DEBUG_LOG
   Serial.print("Move Backward: "); Serial.println(speed);
   #endif
 }
@@ -263,7 +289,7 @@ void moveLeft(uint8_t speed) {
   digitalWrite(REAR_LEFT_MOTOR_DIR, HIGH);        digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
   analogWrite(REAR_LEFT_MOTOR_PWM, speed);        analogWrite(REAR_RIGHT_MOTOR_PWM, speed); 
 
-  #ifdef DEBUG
+  #ifdef DEBUG_LOG
   Serial.print("Move Left: "); Serial.println(speed);
   #endif
 }
@@ -275,7 +301,7 @@ void moveRight(uint8_t speed) {
   digitalWrite(REAR_LEFT_MOTOR_DIR, HIGH);        digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
   analogWrite(REAR_LEFT_MOTOR_PWM, speed);        analogWrite(REAR_RIGHT_MOTOR_PWM, speed);
 
-  #ifdef DEBUG
+  #ifdef DEBUG_LOG
   Serial.print("Move Right");  Serial.println(speed);
   #endif
 }
@@ -287,7 +313,7 @@ void moveLeftForward(uint8_t speed) {
   digitalWrite(REAR_LEFT_MOTOR_DIR, HIGH);         digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
   analogWrite(REAR_LEFT_MOTOR_PWM, speed);         analogWrite(REAR_RIGHT_MOTOR_PWM, 0);
 
-  #ifdef DEBUG
+  #ifdef DEBUG_LOG
   Serial.print("Move Left Forward: ");  Serial.println(speed);
   #endif
 }
@@ -299,7 +325,7 @@ void moveRightForward(uint8_t speed) {
   digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);         digitalWrite(REAR_RIGHT_MOTOR_DIR, HIGH);
   analogWrite(REAR_LEFT_MOTOR_PWM, 0);            analogWrite(REAR_RIGHT_MOTOR_PWM, speed);
 
-  #ifdef DEBUG
+  #ifdef DEBUG_LOG
   Serial.print("Move Right Forward: ");  Serial.println(speed);
   #endif
 }
@@ -311,7 +337,7 @@ void moveLeftBackward(uint8_t speed) {
   digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);          digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
   analogWrite(REAR_LEFT_MOTOR_PWM, 0);             analogWrite(REAR_RIGHT_MOTOR_PWM, speed);
 
-  #ifdef DEBUG
+  #ifdef DEBUG_LOG
   Serial.print("Move Left Backward: "); Serial.println(speed);
   #endif
 }
@@ -323,7 +349,7 @@ void moveRightBackward(uint8_t speed) {
   digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);          digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
   analogWrite(REAR_LEFT_MOTOR_PWM, speed);         analogWrite(REAR_RIGHT_MOTOR_PWM, 0);   
 
-  #ifdef DEBUG
+  #ifdef DEBUG_LOG
   Serial.print("Move Right Backward: ");  Serial.println(speed);
   #endif
 }
@@ -335,7 +361,7 @@ void rotateLeft(uint8_t speed) {
   digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);          digitalWrite(REAR_RIGHT_MOTOR_DIR, HIGH);
   analogWrite(REAR_LEFT_MOTOR_PWM, speed);         analogWrite(REAR_RIGHT_MOTOR_PWM, speed);   
 
-  #ifdef DEBUG
+  #ifdef DEBUG_LOG
   Serial.print("Rotate Left: ");  Serial.println(speed);
   #endif
 }
@@ -347,52 +373,61 @@ void rotateRight(uint8_t speed) {
   digitalWrite(REAR_LEFT_MOTOR_DIR, HIGH);         digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
   analogWrite(REAR_LEFT_MOTOR_PWM, speed);         analogWrite(REAR_RIGHT_MOTOR_PWM, speed);   
 
-  #ifdef DEBUG
+  #ifdef DEBUG_LOG
   Serial.print("Rotate Right: ");  Serial.println(speed);
   #endif
 }
 
 void up() {
   digitalWrite(ELEVATE_MOTOR_DIR, LOW);
-  analogWrite(ELEVATE_MOTOR_PWM, 255);
+  analogWrite(ELEVATE_MOTOR_PWM, 96);
 
-  #ifdef DEBUG
+  #ifdef DEBUG_LOG
   Serial.println("Up");
   #endif
 }
 
 void down() {
   digitalWrite(ELEVATE_MOTOR_DIR, HIGH);
-  analogWrite(ELEVATE_MOTOR_PWM, 255);
+  analogWrite(ELEVATE_MOTOR_PWM, 96);
   
-  #ifdef DEBUG
+  #ifdef DEBUG_LOG
   Serial.println("Down");
   #endif
 }
 
-void grab() {
-  leftFinger.write(0);
-  rightFinger.write(180);
+void elevateOff() {
+  digitalWrite(ELEVATE_MOTOR_DIR, LOW);
+  analogWrite(ELEVATE_MOTOR_PWM, 0);
+  
+  #ifdef DEBUG_LOG
+  Serial.println("Elevate Off");
+  #endif
+}
 
-  #ifdef DEBUG
+void grab() {
+  leftFinger.write(84);
+  rightFinger.write(0);
+
+  #ifdef DEBUG_LOG
   Serial.println("Grab");
   #endif
 }
 
 void release() {
-  leftFinger.write(30);
-  rightFinger.write(120);
+  leftFinger.write(54);
+  rightFinger.write(30);
 
-  #ifdef DEBUG
+  #ifdef DEBUG_LOG
   Serial.println("Release");
   #endif
 }
 
 void spread() {
-  leftFinger.write(90);
-  rightFinger.write(90);
+  leftFinger.write(24);
+  rightFinger.write(60);
 
-  #ifdef DEBUG
+  #ifdef DEBUG_LOG
   Serial.println("Spread");
   #endif
 }
@@ -401,37 +436,33 @@ void fanOn() {
   leftFan.write(90);
   rightFan.write(90);
 
-  #ifdef DEBUG
+  #ifdef DEBUG_LOG
   Serial.println("Fan On");
-  #endif
+  #endif // DEBUG_LOG
 }
 
 void fanOff() {
   leftFan.write(0);
   rightFan.write(0);
 
-  #ifdef DEBUG
+  #ifdef DEBUG_LOG
   Serial.println("Fan Off");
-  #endif
+  #endif // DEBUG_LOG
 }
 
 void stand() {
-  // digitalWrite(FRONT_LEFT_MOTOR_DIR, LOW);        digitalWrite(FRONT_RIGHT_MOTOR_DIR, LOW);
+  digitalWrite(FRONT_LEFT_MOTOR_DIR, LOW);        digitalWrite(FRONT_RIGHT_MOTOR_DIR, LOW);
   analogWrite(FRONT_LEFT_MOTOR_PWM, 0);           analogWrite(FRONT_RIGHT_MOTOR_PWM, 0);
 
-  // digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);        digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
-  analogWrite(REAR_LEFT_MOTOR_PWM, 0);           analogWrite(REAR_RIGHT_MOTOR_PWM, 0);
+  digitalWrite(REAR_LEFT_MOTOR_DIR, LOW);         digitalWrite(REAR_RIGHT_MOTOR_DIR, LOW);
+  analogWrite(REAR_LEFT_MOTOR_PWM, 0);            analogWrite(REAR_RIGHT_MOTOR_PWM, 0);
 
-
-  digitalWrite(ELEVATE_MOTOR_DIR, LOW);
-  analogWrite(ELEVATE_MOTOR_PWM, 0);
-
-  #ifdef DEBUG
+  #ifdef DEBUG_LOG
   Serial.println("Stand");
   #endif
 }
 
-void beep(uint16_t duration, uint16_t repeat) {
+void beep(uint16_t repeat, uint16_t duration) {
   if ((duration < 1) || (repeat < 1))
     return;
   if (repeat == 1) {
