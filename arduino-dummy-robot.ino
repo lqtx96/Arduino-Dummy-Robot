@@ -7,7 +7,7 @@
 // Comment out the bellow line to disable debug logging
 #define DEBUG_LOG
 
-#define COMPASS
+#define DIGITAL_COMPASS
 
 #define CONTROLLER_DATA_PIN       51  // MOSI
 #define CONTROLLER_COMMAND_PIN    50  // MISO
@@ -87,9 +87,9 @@ void setup() {
   Serial.begin(115200);
   configController();
 
-  #ifdef COMPASS
+  #ifdef DIGITAL_COMPASS
     configCompass();
-  #endif // COMPASS
+  #endif // DIGITAL_COMPASS
 
   fanOff();
   spread();
@@ -97,7 +97,7 @@ void setup() {
 }
 
 void loop() {
-  #ifdef COMPASS
+  #ifdef DIGITAL_COMPASS
     sensors_event_t orientationData;
     sensors_event_t accelData;
     sensors_event_t magData;
@@ -109,7 +109,7 @@ void loop() {
     #ifdef DEBUG_LOG
       Serial.print("Heading: "); Serial.print(heading); Serial.print(" --- ");
     #endif // DEBUG_LOG
-  #endif // COMPASS
+  #endif // DIGITAL_COMPASS
 
   if ((controllerError == CONTROLLER_NOT_FOUND) || (controllerType == GUITAR_HERO_CONTROLLER))
     return;
@@ -272,7 +272,7 @@ void loop() {
       delay(200);
     }
 
-    #ifdef COMPASS
+    #ifdef DIGITAL_COMPASS
       if (controller.Button(PSB_PAD_LEFT)) {      
         if ((heading > 270) && (heading <= 360)) {
           while (heading > (270 + ANGLE_OFFSET)) {
@@ -326,7 +326,7 @@ void loop() {
           stand();
         }
       }
-    #endif // COMPASS
+    #endif // DIGITAL_COMPASS
   }
   // delay(10);
 }
