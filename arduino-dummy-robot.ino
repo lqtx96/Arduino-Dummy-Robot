@@ -7,6 +7,8 @@
 // Comment out the bellow line to disable debug logging
 #define DEBUG_LOG
 
+#define COMPASS
+
 #define CONTROLLER_DATA_PIN       51  // MOSI
 #define CONTROLLER_COMMAND_PIN    50  // MISO
 #define CONTROLLER_ATTENTION_PIN  42  // SELECT
@@ -51,6 +53,8 @@
 #define CONTROLLER_NOT_ACCEPTING_COMMANDS 2
 #define CONTROLLER_REFUSING_TO_ENTER_PRESSURE_MODE 3
 
+#define ANGLE_OFFSET 3
+
 bool bArmState = false;
 bool bFanState = false;
 
@@ -76,21 +80,36 @@ int leftJoystickMagnitude = 0;
 int rightJoystickAngle = 0;
 int rightJoystickMagnitude = 0;
 
+uint16_t heading = 0;
+
 void setup() {
   setUpPinout();
   Serial.begin(115200);
   configController();
-  // configCompass();
+
+  #ifdef COMPASS
+    configCompass();
+  #endif // COMPASS
+
   fanOff();
   spread();
   beep(3, 50);
 }
 
 void loop() {
-  // sensors_event_t orientationData, accelData, magData, gyroData;
-  // compass.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
+  #ifdef COMPASS
+    sensors_event_t orientationData;
+    sensors_event_t accelData;
+    sensors_event_t magData;
+    sensors_event_t gyroData;
 
-  // Serial.print("Heading: "); Serial.print(orientationData.orientation.x); Serial.print(" --- ");
+    compass.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
+    heading = (uint16_t) orientationData.orientation.x;
+    
+    #ifdef DEBUG_LOG
+      Serial.print("Heading: "); Serial.print(heading); Serial.print(" --- ");
+    #endif // DEBUG_LOG
+  #endif // COMPASS
 
   if ((controllerError == CONTROLLER_NOT_FOUND) || (controllerType == GUITAR_HERO_CONTROLLER))
     return;
@@ -102,19 +121,17 @@ void loop() {
     rightJoystickX = controller.Analog(PSS_RX);
     rightJoystickY = controller.Analog(PSS_RY);
 
-    // #ifdef DEBUG_LOG
-    // Serial.print("LX:"); Serial.print(leftJoystickX); Serial.print(", ");
-    // Serial.print("LY:"); Serial.print(leftJoystickY); Serial.print(", ");
-    // Serial.print("RX:"); Serial.print(rightJoystickX); Serial.print(", ");
-    // Serial.print("RY:"); Serial.print(rightJoystickY); Serial.print(" --- ");
-    // #endif // DEBUG_LOG
+    #ifdef DEBUG_LOG
+    Serial.print("LX:"); Serial.print(leftJoystickX); Serial.print(", ");
+    Serial.print("LY:"); Serial.print(leftJoystickY); Serial.print(", ");
+    Serial.print("RX:"); Serial.print(rightJoystickX); Serial.print(", ");
+    Serial.print("RY:"); Serial.print(rightJoystickY); Serial.print(" --- ");
+    #endif // DEBUG_LOG
 
     if ((leftJoystickX  > 112) && (leftJoystickX  < 144)
         && (leftJoystickY  > 112) && (leftJoystickY  < 144)
         && (rightJoystickX > 112) && (rightJoystickX < 144)) {
-      // #ifdef DEBUG_LOG
-      // stand();
-      // #endif // DEBUG_LOG
+      stand();
     }
 
     else if ((rightJoystickX < 112)) {
@@ -139,10 +156,10 @@ void loop() {
       leftJoystickAngle = atan2(-(leftJoystickY - 128), (leftJoystickX - 128)) * 180 / PI;
       leftJoystickMagnitude = constrain(sqrt((leftJoystickX - 128) * (leftJoystickX - 128) + (leftJoystickY - 128) * (leftJoystickY - 128)), 0, 128) * 2 - 1;
 
-      #ifdef DEBUG
+      #ifdef DEBUG_LOG
       Serial.print(", Left angle: "); Serial.print(leftJoystickAngle);
       Serial.print(", Left magnitude: "); Serial.print(leftJoystickMagnitude); Serial.println(" --- ");
-      #endif // DEBUG
+      #endif // DEBUG_LOG
 
       if ((leftJoystickAngle >= 68) && (leftJoystickAngle < 112)) {
         if (controller.Button(PSB_R1))
@@ -254,6 +271,62 @@ void loop() {
       beep(1, 50);
       delay(200);
     }
+
+    #ifdef COMPASS
+      if (controller.Button(PSB_PAD_LEFT)) {      
+        if ((heading > 270) && (heading <= 360)) {
+          while (heading > (270 + ANGLE_OFFSET)) {
+            rotateLeft(72);
+          }
+          stand();
+        }
+        else if ((heading > 180) && (heading <= 270)) {
+          while (heading > (180 + ANGLE_OFFSET)) {
+            rotateLeft(72);
+          }
+          stand();
+        }
+        else if ((heading > 90) && (heading <= 180)) {
+          while (heading > (90 + ANGLE_OFFSET)) {
+            rotateLeft(72);
+          }
+          stand();
+        }
+        else if ((heading > 0) && (heading <= 90)) {
+          while (heading > (0 + ANGLE_OFFSET)) {
+            rotateLeft(72);
+          }
+          stand();
+        }
+      }
+
+      if (controller.Button(PSB_PAD_RIGHT)) {      
+        if ((heading > 270) && (heading <= 360)) {
+          while (heading < (360 - ANGLE_OFFSET)) {
+            rotateRight(72);
+          }
+          stand();
+        }
+        else if ((heading > 180) && (heading <= 270)) {
+          while (heading < (270 + ANGLE_OFFSET)) {
+            rotateRight(72);
+          }
+          stand();
+        }
+        else if ((heading > 90) && (heading <= 180)) {
+          while (heading < (180 - ANGLE_OFFSET)) {
+            rotateRight(72);
+          }
+          stand();
+        }
+        else if ((heading > 0) && (heading <= 90)) {
+          while (heading < (90 - ANGLE_OFFSET)) {
+            rotateRight(72);
+          }
+          stand();
+        }
+      }
+    #endif // COMPASS
   }
   // delay(10);
 }
